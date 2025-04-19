@@ -2,3 +2,6 @@
 venv
 .ipynb_*
 *.db
+target/
+dbt_packages/
+logs/
