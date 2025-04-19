@@ -22,5 +22,17 @@ for item in d:
 
 df = pd.DataFrame(fleet)
 
-engine = create_engine('sqlite://', echo=False)
-df.to_sql(name='aeroplane_model', con=engine, if_exists='append')
+engine = create_engine('sqlite:///air_boltic.db', echo=False)
+df.to_sql(name='aeroplane_models', con=engine, if_exists='append')
+
+trip_df = pd.read_csv('../data/Air Boltic data - trip.csv')
+order_df = pd.read_csv('../data/Air Boltic data - order.csv')
+customer_group_df = pd.read_csv('../data/Air Boltic data - customer_group.csv')
+customer_df = pd.read_csv('../data/Air Boltic data - customer.csv')
+aeroplane_df = pd.read_csv('../data/Air Boltic data - aeroplane.csv')
+
+trip_df.to_sql(name='trips', con=engine, if_exists='append')
+order_df.to_sql(name='orders', con=engine, if_exists='append')
+customer_group_df.to_sql(name='customer_groups', con=engine, if_exists='append')
+customer_df.to_sql(name='customers', con=engine, if_exists='append')
+aeroplane_df.to_sql(name='aeroplanes', con=engine, if_exists='append')
