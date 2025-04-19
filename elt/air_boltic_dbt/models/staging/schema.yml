@@ -1,0 +1,19 @@
+models:
+  - name: orders_staging
+    description: "Orders data"
+    # columns:
+      # - name: id
+      #   description: "The primary key for this table"
+      #   data_tests:
+      #     - unique
+      #     - not_null
+  - name: trips_staging
+    description: "Trips data"
+  - name: aeroplane_models_staging
+    description: "Aeroplane models data"
+  - name: aeroplanes_staging
+    description: "Aeroplanes data"
+  - name: customer_groups_staging
+    description: "customer groups data"
+  - name: customers_staging
+    description: "customers data"
