@@ -1,10 +1,10 @@
 {{ config(materialized='table') }}
 
-with source_data as (
+with staged_data as (
 
-    select * from orders
+    select * from {{ ref('orders_staging') }}
 
 )
 
 select *
-from source_data
+from staged_data

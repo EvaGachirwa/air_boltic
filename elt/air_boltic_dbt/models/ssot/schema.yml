@@ -7,3 +7,13 @@ models:
       #   data_tests:
       #     - unique
       #     - not_null
+  - name: trips_ssot
+    description: "Trips data"
+  - name: aeroplane_models_ssot
+    description: "Aeroplane models data"
+  - name: aeroplanes_ssot
+    description: "Aeroplanes data"
+  - name: customer_groups_ssot
+    description: "customer groups data"
+  - name: customers_ssot
+    description: "customers data"
