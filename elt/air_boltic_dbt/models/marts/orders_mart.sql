@@ -2,7 +2,17 @@
 
 with order_data as (
 
-    select * from {{ ref('orders_ssot') }}
+    select "Start Timestamp"
+, "End Timestamp"
+, "Destination City"
+, "Origin City"
+, "Phone Number"
+, Email
+, "Name"
+, Status
+, "Seat No"
+, "Price (Eur)"
+, "Order ID" from {{ ref('orders_ssot') }}
 
 )
 
