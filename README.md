@@ -22,3 +22,11 @@ Set Up DBT
 - Run dbt commands
     - Ensure configuration are well set `dbt debug`
     - Run the project `dbt run`
+
+### DBT layers of transformation
+#### Staging Layer
+The staging layer presents data as it is in the raw form. It is materialised as view because the actual table data is needed when dbt jobs starts running. 
+#### Single source of truth Layer (ssot)
+Single source of truth layer presents entities as defined by the business. E.g the orders SSOT is presented as what business team count as an order. Only basic joins and aggregations are allowed here. This data is presented in the data platform to be reused in different analytics.
+#### Analytics Layer (mart)
+This presents data that has been aggregated, joined, with complex calculations to provide complex analysis in a simplified form. At this level users get aggregated data in the simplest form that business expect, e.g. what are the daily orders. or what were the daily trips. From this data set users can use simple queries to tell, how many trips/orders were placed in a day, a week or a month.

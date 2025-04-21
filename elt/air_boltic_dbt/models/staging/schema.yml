@@ -1,5 +1,5 @@
 models:
-  - name: orders_ssot
+  - name: orders_staging
     description: "Orders data"
     # columns:
       # - name: id
@@ -7,11 +7,13 @@ models:
       #   data_tests:
       #     - unique
       #     - not_null
-  - name: trips_ssot
+  - name: trips_staging
     description: "Trips data"
-  - name: aeroplanes_ssot
+  - name: aeroplane_models_staging
+    description: "Aeroplane models data"
+  - name: aeroplanes_staging
     description: "Aeroplanes data"
-  - name: customer_groups_ssot
+  - name: customer_groups_staging
     description: "customer groups data"
-  - name: customers_ssot
+  - name: customers_staging
     description: "customers data"
