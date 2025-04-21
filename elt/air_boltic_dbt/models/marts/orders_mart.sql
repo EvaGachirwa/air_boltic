@@ -2,17 +2,18 @@
 
 with order_data as (
 
-    select "Start Timestamp"
-, "End Timestamp"
-, "Destination City"
-, "Origin City"
-, "Phone Number"
+    select date(start_time) as trip_start_date
+, date(end_time) as trip_end_date
+, destination_city
+, origin_city
+, phone_number
 , email
-, "Name"
+, name
 , status
-, "Seat No"
-, "Price (Eur)"
-, "Order ID" from {{ ref('orders_ssot') }}
+, seat_number
+, price_in_euro
+, order_id 
+from {{ ref('orders_ssot') }}
 
 )
 
