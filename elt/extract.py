@@ -2,37 +2,51 @@ import json
 import pandas as pd
 from sqlalchemy import create_engine
 
-with open('../data/aeroplane_model.json') as f:
-    d = json.load(f)
-    print(d)
+FLEET = []
+ENGINE = create_engine('sqlite:///air_boltic.db', echo=False)
+AEROPLANE_MODEL_JSON_FILEPATH = '../data/aeroplane_model.json'
+TRIP_CSV_FILEPATH = '../data/Air Boltic data - trip.csv'
+ORDER_CSV_FILEPATH = '../data/Air Boltic data - order.csv'
+CUSTOMER_GROUP_CSV_FILEPATH = '../data/Air Boltic data - customer_group.csv'
+CUSTOMER_CSV_FILEPATH = '../data/Air Boltic data - customer.csv'
+AEROPLANE_CSV_FILEPATH = '../data/Air Boltic data - aeroplane.csv'
 
-fleet = []
 
-for item in d:
+def get_json_data(filepath):
+    with open(filepath) as f:
+        d = json.load(f)
+        return d
+    
+def get_csv_data(filepath):
+    return pd.read_csv(filepath)
+
+    
+def load_to_database(df, table_name, engine, disposation):
+    return df.to_sql(name=table_name, con=engine, if_exists=disposation, index=False)
+
+json_data = get_json_data(AEROPLANE_MODEL_JSON_FILEPATH)
+
+for item in json_data:
     aeroplane = {}
-    print(item)
     aeroplane['type'] = item
-    for indi in d[item]:
+    for indi in json_data[item]:
         aeroplane['series'] = indi
-        aeroplane['max_seats'] = d[item][indi]['max_seats']
-        aeroplane['max_weight'] = d[item][indi]['max_weight']
-        aeroplane['max_distance'] = d[item][indi]['max_distance']
-        aeroplane['engine_type'] = d[item][indi]['engine_type']
-    fleet.append(aeroplane)
+        aeroplane['max_seats'] = json_data[item][indi]['max_seats']
+        aeroplane['max_weight'] = json_data[item][indi]['max_weight']
+        aeroplane['max_distance'] = json_data[item][indi]['max_distance']
+        aeroplane['engine_type'] = json_data[item][indi]['engine_type']
+    FLEET.append(aeroplane)
 
-df = pd.DataFrame(fleet)
+aeroplane_model_df = pd.DataFrame(FLEET)
+trip_df = get_csv_data(TRIP_CSV_FILEPATH)
+order_df = get_csv_data(ORDER_CSV_FILEPATH)
+customer_group_df = get_csv_data(CUSTOMER_GROUP_CSV_FILEPATH)
+customer_df = get_csv_data(CUSTOMER_CSV_FILEPATH)
+aeroplane_df = get_csv_data(AEROPLANE_CSV_FILEPATH)
 
-engine = create_engine('sqlite:///air_boltic.db', echo=False)
-df.to_sql(name='aeroplane_models', con=engine, if_exists='append')
-
-trip_df = pd.read_csv('../data/Air Boltic data - trip.csv')
-order_df = pd.read_csv('../data/Air Boltic data - order.csv')
-customer_group_df = pd.read_csv('../data/Air Boltic data - customer_group.csv')
-customer_df = pd.read_csv('../data/Air Boltic data - customer.csv')
-aeroplane_df = pd.read_csv('../data/Air Boltic data - aeroplane.csv')
-
-trip_df.to_sql(name='trips', con=engine, if_exists='append')
-order_df.to_sql(name='orders', con=engine, if_exists='append')
-customer_group_df.to_sql(name='customer_groups', con=engine, if_exists='append')
-customer_df.to_sql(name='customers', con=engine, if_exists='append')
-aeroplane_df.to_sql(name='aeroplanes', con=engine, if_exists='append')
+load_to_database(df=aeroplane_model_df, table_name='aeroplane_models', engine=ENGINE, disposation='append')
+load_to_database(df=trip_df, table_name='trips', engine=ENGINE, disposation='append')
+load_to_database(df=order_df, table_name='orders', engine=ENGINE, disposation='append')
+load_to_database(df=customer_group_df, table_name='customer_groups', engine=ENGINE, disposation='append')
+load_to_database(df=customer_df, table_name='customers', engine=ENGINE, disposation='append')
+load_to_database(df=aeroplane_df, table_name='aeroplanes', engine=ENGINE, disposation='append')
