@@ -7,4 +7,4 @@ with order_data as (
 )
 
 select *
-from staged_data
+from order_data
