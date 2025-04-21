@@ -3,9 +3,9 @@
 with staged_data as (
 
     select * from {{ ref('customers_staging') }} as customer
-    LEFT JOIN {{ ref('customer_groups_staging') }} as cust_group
-    ON
-        customer.customer_group_id = cust_group.id
+    left join {{ ref('customer_groups_staging') }} as cust_group
+        on
+            customer.customer_group_id = cust_group.id
 
 )
 
