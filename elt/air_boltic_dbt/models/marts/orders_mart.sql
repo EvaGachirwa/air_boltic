@@ -7,9 +7,9 @@ with order_data as (
 , "Destination City"
 , "Origin City"
 , "Phone Number"
-, Email
+, email
 , "Name"
-, Status
+, status
 , "Seat No"
 , "Price (Eur)"
 , "Order ID" from {{ ref('orders_ssot') }}

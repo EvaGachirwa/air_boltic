@@ -2,7 +2,12 @@
 
 with source_data as (
 
-    select * from customers
+    select "Customer ID" as customer_id
+    , Name as name
+    , "Customer Group ID" as customer_group_id
+    , Email as email
+    , "Phone Number" as phone_number
+    from customers
 
 )
 

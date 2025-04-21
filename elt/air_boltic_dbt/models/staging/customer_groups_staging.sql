@@ -2,7 +2,11 @@
 
 with source_data as (
 
-    select * from customer_groups
+    select ID as id
+    , Type as type
+    , Name as name
+    , "Registry Number" as registry_number
+    from customer_groups
 
 )
 
