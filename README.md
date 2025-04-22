@@ -71,8 +71,10 @@ This environment produces models that are used by data analysts to develop busin
 DBT jobs on this environment are submitted to an orchestrator.
 The manifest.json and run_results.json is stored for future reference.
 Jobs include:
-Checkout code repo(mostly `git clone` of dbt project main branch) >> `dbt deps` >> `dbt run` >> `dbt test` 
-
+```mermaid
+graph LR
+A(Checkout code repo(mostly `git clone` of dbt project main branch)) -->B(dbt deps) -->C(dbt run) -->D(dbt test)  
+```
 
 
 ### Handling dbt artifacts in Production
