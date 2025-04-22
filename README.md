@@ -24,6 +24,12 @@ Set Up DBT
     - Run the project `dbt run`
 
 ### DBT layers of transformation
+
+```mermaid
+graph LR
+A(Staging Layer) -->B(SSOT) -->C(Presentation)  
+```
+
 #### Staging Layer
 The staging layer presents data as it is in the raw form. It is materialised as view because the actual table data is needed when dbt jobs starts running. 
 #### Single source of truth Layer (ssot)
@@ -43,5 +49,38 @@ Formatter for python file
 - `pip install black`
 - `black extract.py`
 
-### CICD
+### CICD Setup
+#### Environments
+To effectively build and deploy changes on Github project, different environments are needed as follows.
+###### Development Environment
+Development environment is used by individual contributors to develop and test their changes. This includes access to raw data and assets for models development. If BigQuery is being used as a data warehouse a project, air-boltic-dev, can be used. Contributors will set up profile.yml pointing to this project with a prefix to uniquely identify dataset created by running dbt run on individual development environment.
+After developmennt and testing changes the contributor pushes the changes to Github and opens a PR. This triggers a new environment, CI environment.
+###### CI Environment
+The CI environment ensures the changes made in the repository are correct and they conform to standards put in place by the team. In this environment, static code is analyzed for format, dbt run and test is done to ensure it doesn't break.
+In BigQuery a separate project, air-boltic-ci can be used. The datasets created should be prefixed with pr number to uniquely identify assets produced by a specific pr. This environment is shared and can grow very fast, so datasets should be set to expire based on time or when the PR is closed or merged to main.
+###### Example github actions steps
+- Check code formatting
+- Run dbt run on changed models
+    - use production manifest.json to defer from
+    - generated models(tables and datasets) go into a cicd database where they are deleted when PR is merged or after a period of time.
+    The expiration of cicd assets keeps the cicd environment clean
+- Run dbt test
+If the changes are reviewed and passes the set CICD checks, they are then added to production environment
+###### Production Environment
+This environment produces models that are used by data analysts to develop business critical analysis. Developers aim to keep this environment available and correct.
+DBT jobs on this environment are submitted to an orchestrator.
+The manifest.json and run_results.json is stored for future reference.
+Jobs include:
+Checkout code repo(mostly `git clone` of dbt project main branch) >> `dbt deps` >> `dbt run` >> `dbt test` 
+
+
+
+### Handling dbt artifacts in Production
+After a run dbt produces important files e.g. manifest.json and run_results.json.
+- manifest.json
+    This file contains models, tests and macros lineage
+- run_results.json
+    This file contain metadata on every run.
+Break down the results using [Elementary Data](https://www.elementary-data.com/) and store it for analysis of the health of the dbt environment
+
 
