@@ -73,7 +73,7 @@ The manifest.json and run_results.json is stored for future reference.
 Jobs include:
 ```mermaid
 graph LR
-A(Checkout code repo(mostly `git clone` of dbt project main branch)) -->B(dbt deps) -->C(dbt run) -->D(dbt test)  
+A(Checkout code repo `git clone` of dbt project main branch) -->B(dbt deps) -->C(dbt run) -->D(dbt test)  
 ```
 
 
