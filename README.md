@@ -50,11 +50,23 @@ The Analytics Layer, often referred to as the Mart layer, delivers data that has
 At this level, users can easily perform simple queries to derive meaningful insights. For instance, they can determine how many trips or orders occurred in a day, week, or month. The Analytics Layer is designed to empower users with a highly usable dataset, streamlining query complexity and enabling efficient decision-making.
 
 ## Transformation Considerations
-DBT is a great tool. It has a great community and makes working with SQL transformations efficient. However it also comes with its own shortcommings e.g. 
-- DBT executes in the data warehouse which makes it impossible to carry out any tasks unless connected to the warehouse. 
-- Excutions in the data warehouse can be very expensive especially as an organisation and its data grows.
-- DBT is limited to batch processing making it impossible to get immediate data updates.
-- Incremental data processing in DBT are complex as it requires jobs to be set for full refresh on a regular basis.
+dbt is an excellent tool, widely recognized for its ability to streamline SQL-based transformations with an active and supportive community. It incorporates best practices in software development, like modularity, version control, and testing, which make it particularly efficient for analytics engineering. However, while dbt is highly effective for many use cases, it comes with certain limitations:
+
+Shortcomings:
+- Dependency on Data Warehouses:
+
+    dbt executes directly in the data warehouse, meaning it requires an active connection to a warehouse like Snowflake, BigQuery, or Redshift. Without this connection, no transformations can be carried out.
+- Cost of Executions at Scale:
+
+    Transformations in dbt are run in the data warehouse, which can lead to significant cost increases as organisational data grows. This is particularly true for large-scale transformations requiring extensive compute resources in the warehouse.
+- Batch Processing Only:
+
+    dbt is optimised for batch processing rather than real-time or streaming workflows. This makes it unsuitable for scenarios requiring immediate or continuous updates to data.
+- Complexity in Incremental Processing:
+
+    Incremental data processing, while supported, is complex. Organisations often need to set up jobs for full refreshes regularly, adding operational overhead and difficulty in maintaining efficient pipelines.
+
+Depending on using cases tools like flink and spark can be used in place or to supplement DBT.
 
 ### Code Formatting
 ###### sqlfluff
@@ -71,10 +83,10 @@ Formatter for python file
 ### CICD Setup
 #### Environments
 To effectively build and deploy changes on Github project, different environments are needed as follows.
-###### Development Environment
+##### Development Environment
 Development environment is used by individual contributors to develop and test their changes. This includes access to raw data and assets for models development. If BigQuery is being used as a data warehouse a project, air-boltic-dev, can be used. Contributors will set up profile.yml pointing to this project with a prefix to uniquely identify dataset created by running dbt run on individual development environment.
 After developmennt and testing changes the contributor pushes the changes to Github and opens a PR. This triggers a new environment, CI environment.
-###### CI Environment
+##### CI Environment
 The CI environment ensures the changes made in the repository are correct and they conform to standards put in place by the team. In this environment, static code is analyzed for format, dbt run and test is done to ensure it doesn't break.
 In BigQuery a separate project, air-boltic-ci can be used. The datasets created should be prefixed with pr number to uniquely identify assets produced by a specific pr. This environment is shared and can grow very fast, so datasets should be set to expire based on time or when the PR is closed or merged to main.
 ###### Example github actions steps
@@ -85,7 +97,7 @@ In BigQuery a separate project, air-boltic-ci can be used. The datasets created 
     The expiration of cicd assets keeps the cicd environment clean
 - Run dbt test
 If the changes are reviewed and passes the set CICD checks, they are then added to production environment
-###### Production Environment
+##### Production Environment
 This environment produces models that are used by data analysts to develop business critical analysis. Developers aim to keep this environment available and correct.
 DBT jobs on this environment are submitted to an orchestrator.
 The manifest.json and run_results.json is stored for future reference.
@@ -96,6 +108,7 @@ A(Checkout dbt repo like git clone of dbt project main branch) -->B(dbt deps) --
 ```
 ###### Incremental processing job
 The submitted wokflow didn't cover incremental processing, however it is one of the powerful way of updating data in DBT. The normal production job can be used on models that materialise in an incremental model. A separate job will be needed for fully refreshing the incremental models.
+![alt text](architecture/incremental.png)
 
 
 ### Handling dbt artifacts in Production
@@ -107,6 +120,6 @@ After a run dbt produces important files e.g. manifest.json and run_results.json
 Break down the results using [Elementary Data](https://www.elementary-data.com/) and store it for analysis of the health of the dbt environment
 
 ## Current Architecture
-![Current Architecture](architecture/current.png)
+![alt text](architecture/current.png)
 ## Ideal Architecture
 ![Ideal Architecture](architecture/ideal.png)
