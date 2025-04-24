@@ -1,27 +1,35 @@
 ## Raw Data
-The raw data has been downloaded from the shared files online into the data folder.
-This is with the assumption that authentication against google drive is not necessary. I would expect the datasets would be in S3 and can be read through python in databricks or other interface.
+For development purposes, the raw data has been downloaded from shared online files and placed in the data folder. This setup assumes that the data is stored in an S3 bucket, eliminating the need for Google Drive authentication. In a production environment, the datasets would typically reside in S3 and be accessed using Python through platforms like Databricks. Maintaining the data in its raw format is a best practice, as it allows for easy reconstruction of analytics datasets in the event of a data warehouse migration or data loss.
 ## Data Exploration
-The python notebooks were used for data exploration. This is to ensure that data can be read as expected using standard libraries.
-The exploration identifies:
-- Data inconsistencies that should be cleared. E.g Some customers are missing customer groups. In this case one can decide to fix the null values or ignore the column when performing analytics. There is also a customer_group_id 10 in customer table but that id doesnt exist as a primary key in customer-group table
-- Understanding data ingestion, some datasets are in json file and other in csv files, this influences how the data is read.
+Python notebooks were used to perform initial data exploration, ensuring that the datasets could be read correctly using standard Python libraries. This step surfaced several important observations:
+
+- Data inconsistencies:
+    For example, some customer records are missing associated customer group values. Depending on the analysis requirements, these null values can either be imputed or the column can be excluded altogether. Additionally, a mismatch was identified where customer_group_id = 10 exists in the customer table, but is not present as a primary key in the customer_group table — indicating a referential integrity issue.
+
+- Data format variability:
+    The datasets are provided in both JSON and CSV formats, which affects how they are ingested and parsed during processing. Understanding these format differences is essential for consistent data handling.
 ## Extract
-In ELT folder an extract file is added to extract data from the various sources including the csvs and json file
+An extract script, located in the ELT folder, is used to pull data from various sources, including both CSV and JSON files. After extraction, the data is loaded into an SQLite database to enable easy querying and transformation during development.
 ## Load
-The data is then loaded into an sqlite database. Choosing Sqlite database was done because this is a development environment. It is also a quick solution to demostrate skills in handling structured data. In a production environment I would consider using a datawarehouse e.g. Bigquery or Snowflake. I would also bulk load the data using csv dump and/or json dump to save on memory space to process data, bulk load would also minimise the amount of inserts into the database, saving on cost.
+SQLite was chosen as the database solution for this project due to its simplicity and suitability for a development environment. It provides a lightweight and efficient way to demonstrate the ability to work with structured data. However, in a production setting, a more robust data warehouse such as BigQuery or Snowflake would be preferable. Additionally, data would be bulk-loaded using CSV or JSON dumps to optimize memory usage and processing time. Bulk loading also reduces the number of individual insert operations, resulting in improved performance and lower operational costs.
 ## Transform
-This project used DBT to transform the data.
-Set Up DBT
-- Install dbt python packages if not already installed from the requirements file
+This project uses DBT (Data Build Tool) to manage data transformations in a modular, scalable, and version-controlled manner.
+#### DBT Setup Steps
+- Install Required Packages
+    If not already installed, use the following command to install the necessary DBT packages:
     `pip install dbt-core dbt-sqlite`
-- Set up the profiles.yml page. Unless configured otherwise, the file is located in .dbt folder
-    `nano  ~/.dbt/profiles.yml`
-    `change main: to point to the right database`
-    `change schema: to point to the folder containing project.yml file` in this case `air_boltic/elt/air_boltic_dbt\`
-- Run dbt commands
-    - Ensure configuration are well set `dbt debug`
-    - Run the project `dbt run`
+- Configure the DBT Profile
+    DBT requires a profiles.yml file to manage connection settings. This file is typically located at ~/.dbt/profiles.yml. To configure:
+    - Open the file:
+        `nano  ~/.dbt/profiles.yml`
+    - Update the main: section to point to the correct SQLite database.
+    - Set the schema: to the folder containing your project.yml file.
+        `air_boltic/elt/air_boltic_dbt\`
+- Run DBT Commands
+    - Ensure configuration are well set 
+        `dbt debug`
+    - Run the project 
+        `dbt run`
 
 ### DBT layers of transformation
 
@@ -31,11 +39,34 @@ A(Staging Layer) -->B(SSOT) -->C(Presentation)
 ```
 
 #### Staging Layer
-The staging layer presents data as it is in the raw form. It is materialised as view because the actual table data is needed when dbt jobs starts running. 
+The staging layer serves as a representation of raw data in its original form. It is materialised as a view to ensure the underlying table data remains accessible when dbt jobs are initiated. This approach supports efficient processing and maintains the integrity of the pipeline's workflow.
 #### Single source of truth Layer (ssot)
-Single source of truth layer presents entities as defined by the business. E.g the orders SSOT is presented as what business team count as an order. Only basic joins and aggregations are allowed here. This data is presented in the data platform to be reused in different analytics.
+The Single Source of Truth (SSOT) layer represents entities as defined by the business, ensuring consistency and alignment with organisational standards. For example, the "orders" SSOT reflects what the business team recognises and considers as an order.
+
+This layer is limited to basic joins and aggregations, focusing on preserving accuracy and simplicity. The processed data is then made available on the data platform for reuse across various analytical use cases, enabling consistency and efficiency in data-driven decision-making.
 #### Analytics Layer (mart)
-This presents data that has been aggregated, joined, with complex calculations to provide complex analysis in a simplified form. At this level users get aggregated data in the simplest form that business expect, e.g. what are the daily orders. or what were the daily trips. From this data set users can use simple queries to tell, how many trips/orders were placed in a day, a week or a month.
+The Analytics Layer, often referred to as the Mart layer, delivers data that has been fully aggregated, joined, and enriched with complex calculations to support advanced analysis in a simplified and accessible format. This layer is tailored to meet business expectations by providing intuitive and aggregated insights, such as daily orders or daily trips.
+
+At this level, users can easily perform simple queries to derive meaningful insights. For instance, they can determine how many trips or orders occurred in a day, week, or month. The Analytics Layer is designed to empower users with a highly usable dataset, streamlining query complexity and enabling efficient decision-making.
+
+## Transformation Considerations
+dbt is an excellent tool, widely recognized for its ability to streamline SQL-based transformations with an active and supportive community. It incorporates best practices in software development, like modularity, version control, and testing, which make it particularly efficient for analytics engineering. However, while dbt is highly effective for many use cases, it comes with certain limitations:
+
+Shortcomings:
+- Dependency on Data Warehouses:
+
+    dbt executes directly in the data warehouse, meaning it requires an active connection to a warehouse like Snowflake, BigQuery, or Redshift. Without this connection, no transformations can be carried out.
+- Cost of Executions at Scale:
+
+    Transformations in dbt are run in the data warehouse, which can lead to significant cost increases as organisational data grows. This is particularly true for large-scale transformations requiring extensive compute resources in the warehouse.
+- Batch Processing Only:
+
+    dbt is optimised for batch processing rather than real-time or streaming workflows. This makes it unsuitable for scenarios requiring immediate or continuous updates to data.
+- Complexity in Incremental Processing:
+
+    Incremental data processing, while supported, is complex. Organisations often need to set up jobs for full refreshes regularly, adding operational overhead and difficulty in maintaining efficient pipelines.
+
+Depending on using cases tools like flink and spark can be used in place or to supplement DBT.
 
 ### Code Formatting
 ###### sqlfluff
@@ -52,10 +83,10 @@ Formatter for python file
 ### CICD Setup
 #### Environments
 To effectively build and deploy changes on Github project, different environments are needed as follows.
-###### Development Environment
+##### Development Environment
 Development environment is used by individual contributors to develop and test their changes. This includes access to raw data and assets for models development. If BigQuery is being used as a data warehouse a project, air-boltic-dev, can be used. Contributors will set up profile.yml pointing to this project with a prefix to uniquely identify dataset created by running dbt run on individual development environment.
 After developmennt and testing changes the contributor pushes the changes to Github and opens a PR. This triggers a new environment, CI environment.
-###### CI Environment
+##### CI Environment
 The CI environment ensures the changes made in the repository are correct and they conform to standards put in place by the team. In this environment, static code is analyzed for format, dbt run and test is done to ensure it doesn't break.
 In BigQuery a separate project, air-boltic-ci can be used. The datasets created should be prefixed with pr number to uniquely identify assets produced by a specific pr. This environment is shared and can grow very fast, so datasets should be set to expire based on time or when the PR is closed or merged to main.
 ###### Example github actions steps
@@ -66,7 +97,7 @@ In BigQuery a separate project, air-boltic-ci can be used. The datasets created 
     The expiration of cicd assets keeps the cicd environment clean
 - Run dbt test
 If the changes are reviewed and passes the set CICD checks, they are then added to production environment
-###### Production Environment
+##### Production Environment
 This environment produces models that are used by data analysts to develop business critical analysis. Developers aim to keep this environment available and correct.
 DBT jobs on this environment are submitted to an orchestrator.
 The manifest.json and run_results.json is stored for future reference.
@@ -75,6 +106,9 @@ Jobs include:
 graph LR
 A(Checkout dbt repo like git clone of dbt project main branch) -->B(dbt deps) -->C(dbt run) -->D(dbt test)  
 ```
+###### Incremental processing job
+The submitted wokflow didn't cover incremental processing, however it is one of the powerful way of updating data in DBT. The normal production job can be used on models that materialise in an incremental model. A separate job will be needed for fully refreshing the incremental models.
+![alt text](architecture/incremental.png)
 
 
 ### Handling dbt artifacts in Production
@@ -85,4 +119,7 @@ After a run dbt produces important files e.g. manifest.json and run_results.json
     This file contain metadata on every run.
 Break down the results using [Elementary Data](https://www.elementary-data.com/) and store it for analysis of the health of the dbt environment
 
-
+## Current Architecture
+![alt text](architecture/current.png)
+## Ideal Architecture
+![Ideal Architecture](architecture/ideal.png)
