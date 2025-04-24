@@ -1,3 +1,29 @@
 models:
   - name: orders_mart
     description: "Orders data"
+    columns:
+      - name: destination_city
+        description: "The trips' destination city"
+        data_tests:
+          - unique
+          - not_null
+      - name: origin_city
+        description: "The trips' origin city"
+      - name: phone_number
+        description: "Customer's phone number"
+      - name: email
+        description: "Customer's email"
+      - name: name
+        description: "Customer's name"
+      - name: status
+        description: "Trip's status"
+      - name: seat_number
+        description: "Number of seats in the Airplane"
+      - name: price_in_euro
+        description: "Price of the trip in Euros"
+      - name: order_id
+        description: "Order unique identifier"
+      - name: trip_start_date
+        description: "Date to start the trip"
+      - name: trip_end_date
+        description: "Date the trip ends"
