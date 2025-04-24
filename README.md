@@ -123,3 +123,17 @@ Break down the results using [Elementary Data](https://www.elementary-data.com/)
 ![alt text](architecture/current.png)
 ## Ideal Architecture
 ![Ideal Architecture](architecture/ideal.png)
+
+# Set Up
+On python 3.10
+1. Create a virtual environment
+    `python -m venv venv`
+2. Activate virtual environment and install packages
+    `source venv/bin/activate`
+    `pip install -r requirements.txt`
+3. Run extract.py to create database and tables
+    `cd elt`
+    `python extract.py`
+4. Run dbt to create the models
+    `cd air_boltic_dbt`
+    `dbt run`
